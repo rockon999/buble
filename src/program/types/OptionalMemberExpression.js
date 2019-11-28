@@ -2,6 +2,8 @@ import Node from '../Node.js';
 
 export default class OptionalMemberExpression extends Node {
 	transpile(code, transforms) {
+		super.transpile(code, transforms);
+
 		function buildChain(_obj) {
 			let obj = _obj;
 			let chain = [];
@@ -15,7 +17,5 @@ export default class OptionalMemberExpression extends Node {
 		const chain = [...buildChain(this.object), this.property.name];
 		code.prependLeft(this.object.start, '(');
 		code.overwrite(this.object.end, this.property.end, ` == null ? void 0 : ${chain.join('.')})`);
-
-		super.transpile(code, transforms);
 	}
 }
