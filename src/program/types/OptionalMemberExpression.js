@@ -39,7 +39,7 @@ export default class OptionalMemberExpression extends Node {
 		}
 
 		const chain = [...buildChain(this)];
-		code.prependLeft(this.start, '(');
+		code.prependRight(this.object.start, '(');
 		code.overwrite(this.object.end, this.end, ` == null ? void 0 : ${stringifyChain(chain)})`);
 	}
 }
