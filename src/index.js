@@ -1,14 +1,17 @@
 import * as acorn from 'acorn';
-import acornJsx from 'acorn-jsx/inject';
-import acornDynamicImport from 'acorn-dynamic-import/lib/inject';
+import acornJsx from 'acorn-jsx';
+import acornDynamicImport from 'acorn-dynamic-import/src/index'; // Use ESM imports.
+import acornOptionalChaining from 'acorn-optional-chaining';
 import Program from './program/Program.js';
 import { features, matrix } from './support.js';
 import getSnippet from './utils/getSnippet.js';
 
-const { parse } = [acornJsx, acornDynamicImport].reduce(
-	(final, plugin) => plugin(final),
-	acorn
+const BubleParser = acorn.Parser.extend(
+	acornJsx(),
+	acornDynamicImport,
+	acornOptionalChaining
 );
+const parse = BubleParser.parse.bind(BubleParser);
 
 const dangerousTransforms = ['dangerousTaggedTemplateString', 'dangerousForOf'];
 
@@ -53,17 +56,17 @@ export function target(target) {
 	return transforms;
 }
 
-export function transform ( source, options = {} ) {
-	let transforms = target( options.target || {} );
-	Object.keys( options.transforms || {} ).forEach( name => {
-		if ( name === 'modules' ) {
-			if ( !( 'moduleImport' in options.transforms ) ) transforms.moduleImport = options.transforms.modules;
-			if ( !( 'moduleExport' in options.transforms ) ) transforms.moduleExport = options.transforms.modules;
+export function transform(source, options = {}) {
+	let transforms = target(options.target || {});
+	Object.keys(options.transforms || {}).forEach(name => {
+		if (name === 'modules') {
+			if (!('moduleImport' in options.transforms)) transforms.moduleImport = options.transforms.modules;
+			if (!('moduleExport' in options.transforms)) transforms.moduleExport = options.transforms.modules;
 			return;
 		}
 
-		if ( !( name in transforms ) ) throw new Error( `Unknown transform '${name}'` );
-		transforms[ name ] = options.transforms[ name ];
+		if (!(name in transforms)) throw new Error(`Unknown transform '${name}'`);
+		transforms[name] = options.transforms[name];
 	});
 
 	if (transforms.stripWith) {
@@ -79,6 +82,7 @@ export function transform ( source, options = {} ) {
 		ast = parse(source, {
 			ecmaVersion: 9,
 			preserveParens: true,
+			location: true,
 			sourceType: transforms.stripWith ? 'script' : 'module',
 			onComment: (block, text) => {
 				if (!jsx) {
@@ -88,7 +92,8 @@ export function transform ( source, options = {} ) {
 			},
 			plugins: {
 				jsx: true,
-				dynamicImport: true
+				dynamicImport: true,
+				optionalChaining: true
 			}
 		});
 		options.jsx = jsx || options.jsx;
@@ -98,7 +103,7 @@ export function transform ( source, options = {} ) {
 		throw err;
 	}
 
-	return new Program( source, ast, transforms, options ).export( options );
+	return new Program(source, ast, transforms, options).export(options);
 }
 
 export { version as VERSION } from '../package.json';

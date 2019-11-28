@@ -34,6 +34,7 @@ import LoopStatement from './shared/LoopStatement.js';
 import MemberExpression from './MemberExpression.js';
 import NewExpression from './NewExpression.js';
 import ObjectExpression from './ObjectExpression.js';
+import OptionalMemberExpression from './OptionalMemberExpression.js';
 import Property from './Property.js';
 import ReturnStatement from './ReturnStatement.js';
 import SpreadElement from './SpreadElement.js';
@@ -84,6 +85,7 @@ export default {
 	MemberExpression,
 	NewExpression,
 	ObjectExpression,
+	OptionalMemberExpression,
 	Property,
 	ReturnStatement,
 	SpreadElement,
